@@ -1,0 +1,2 @@
+class WeeklySummary < ApplicationRecord
+end

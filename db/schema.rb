@@ -10,10 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171029194215) do
+ActiveRecord::Schema.define(version: 20171105231403) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "daily_snapshots", force: :cascade do |t|
+    t.jsonb "data", default: {}
+    t.bigint "todo_list_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["todo_list_id"], name: "index_daily_snapshots_on_todo_list_id"
+  end
 
   create_table "reflections", id: :serial, force: :cascade do |t|
     t.integer "rating"
@@ -43,8 +51,10 @@ ActiveRecord::Schema.define(version: 20171029194215) do
     t.integer "actual_time_blocks", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "todo_list_id"
-    t.index ["todo_list_id"], name: "index_todos_on_todo_list_id"
+    t.integer "daily_todo_list_id"
+    t.integer "weekly_todo_list_id"
+    t.index ["daily_todo_list_id"], name: "index_todos_on_daily_todo_list_id"
+    t.index ["weekly_todo_list_id"], name: "index_todos_on_weekly_todo_list_id"
   end
 
   create_table "users", id: :serial, force: :cascade do |t|
@@ -66,7 +76,17 @@ ActiveRecord::Schema.define(version: 20171029194215) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  create_table "weekly_summaries", force: :cascade do |t|
+    t.integer "completion_percentage", default: 0
+    t.integer "weekly_rating", default: 0
+    t.text "todo_list_ids", default: [], array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_foreign_key "daily_snapshots", "todo_lists"
   add_foreign_key "reflections", "users"
   add_foreign_key "todo_lists", "users"
-  add_foreign_key "todos", "todo_lists"
+  add_foreign_key "todos", "todo_lists", column: "daily_todo_list_id"
+  add_foreign_key "todos", "todo_lists", column: "weekly_todo_list_id"
 end
